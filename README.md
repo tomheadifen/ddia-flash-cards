@@ -2,9 +2,12 @@
 
 Chapter-by-chapter flashcards for *Designing Data-Intensive Applications* (1st edition), as a static site for GitHub Pages.
 
-- Toggle chapters (or whole parts) on and off; the deck rebuilds from your selection.
-- Flip with a click or <kbd>Space</kbd>; mark **Got it** (<kbd>→</kbd>/<kbd>G</kbd>), **Again** (<kbd>←</kbd>/<kbd>A</kbd>, re-queued a few cards later) or **Skip** (<kbd>S</kbd>).
-- **Unlearned only** hides cards you've marked Got it; **Answer first** reverses the cards.
+Built for phones. Two screens:
+
+1. **Chapters** — tick chapters (or whole parts), set options (shuffle, unlearned only, answer first), then tap **Start**.
+2. **Cards** — tap to flip; swipe right or tap **Got it**, swipe left or tap **Again** (re-queued a few cards later), or **Skip**. The back arrow (or your phone's back button) returns to chapters.
+
+Keyboard on desktop: <kbd>Space</kbd> flip, <kbd>→</kbd>/<kbd>G</kbd> got it, <kbd>←</kbd>/<kbd>A</kbd> again, <kbd>S</kbd> skip, <kbd>Esc</kbd> back.
 - Selection and progress are saved in your browser's localStorage.
 
 ## Adding cards

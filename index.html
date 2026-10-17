@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15140f" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DDIA Cards">
 <title>DDIA Flashcards</title>
 <meta name="description" content="Chapter-by-chapter flashcards for Designing Data-Intensive Applications (1st edition).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,346 +15,380 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f1ea;
-    --panel: #fffdf8;
-    --ink: #1d1b17;
-    --muted: #6b665c;
-    --line: #ddd6c8;
-    --accent: #b5482d;
-    --accent-soft: #f3dfd6;
-    --good: #2f6f4f;
-    --good-soft: #dcebe2;
-    --chip: #ebe5d8;
-    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 12px 32px -16px rgba(60,40,10,.25);
+    --bg: #f4f1ea; --panel: #fffdf8; --ink: #1d1b17; --muted: #6b665c; --line: #ddd6c8;
+    --accent: #b5482d; --accent-soft: #f3dfd6; --good: #2f6f4f; --good-soft: #dcebe2; --chip: #ebe5d8;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 14px 34px -18px rgba(60,40,10,.3);
+    --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #15140f; --panel: #1f1d17; --ink: #ece7dc; --muted: #9a9384; --line: #35322a;
       --accent: #e0775a; --accent-soft: #3a241c; --good: #7cc29c; --good-soft: #1d3127; --chip: #2a2720;
-      --shadow: 0 1px 0 rgba(255,255,255,.03), 0 12px 32px -16px rgba(0,0,0,.6);
+      --shadow: 0 1px 0 rgba(255,255,255,.03), 0 14px 34px -18px rgba(0,0,0,.7);
     }
   }
   :root[data-theme="dark"] {
     --bg: #15140f; --panel: #1f1d17; --ink: #ece7dc; --muted: #9a9384; --line: #35322a;
     --accent: #e0775a; --accent-soft: #3a241c; --good: #7cc29c; --good-soft: #1d3127; --chip: #2a2720;
-    --shadow: 0 1px 0 rgba(255,255,255,.03), 0 12px 32px -16px rgba(0,0,0,.6);
+    --shadow: 0 1px 0 rgba(255,255,255,.03), 0 14px 34px -18px rgba(0,0,0,.7);
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
   body {
     background: var(--bg); color: var(--ink);
-    font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    font: 16px/1.5 "IBM Plex Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-  h1 { font-family: Fraunces, Georgia, serif; font-weight: 650; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; margin: 0; letter-spacing: -.01em; }
-  h1 span { color: var(--accent); }
-  .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
-  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
-  @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+  button { font: inherit; color: inherit; }
+  .screen { max-width: 560px; margin: 0 auto; }
+  [hidden] { display: none !important; }
 
-  /* Sidebar */
-  aside { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
-  @media (min-width: 821px) { aside { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; } }
-  .side-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; }
-  .side-head::-webkit-details-marker { display: none; }
-  .caret { display: none; transition: transform .2s; }
-  details:not([open]) .caret { transform: rotate(-90deg); }
-  @media (max-width: 820px) { .caret { display: inline-block; } }
-  @media (min-width: 821px) { .side-head { pointer-events: none; } }
-  .side-head h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; font-weight: 600; }
-  .quick { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-  .part-label { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 14px 0 4px; display: flex; justify-content: space-between; align-items: center; }
-  .part-label button { font: inherit; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 2px 4px; text-transform: none; letter-spacing: 0; }
-  .ch { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 8px; border-radius: 8px; cursor: pointer; user-select: none; }
-  .ch:hover { background: var(--chip); }
-  .ch input { appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--muted); border-radius: 5px; margin: 0; display: grid; place-content: center; cursor: pointer; }
-  .ch input:checked { background: var(--accent); border-color: var(--accent); }
-  .ch input:checked::after { content: ""; width: 9px; height: 5px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px,-1px); }
-  .ch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .ch-title { font-size: 14px; line-height: 1.3; }
-  .ch-title b { font-family: "IBM Plex Mono", monospace; font-weight: 500; color: var(--muted); margin-right: 6px; font-size: 12px; }
-  .ch-meta { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .ch-meta.done { color: var(--good); }
+  /* ---------- Select screen ---------- */
+  #select { padding: calc(20px + var(--safe-t)) 16px calc(110px + var(--safe-b)); }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+  h1 { font-family: Fraunces, Georgia, serif; font-weight: 650; font-size: 30px; line-height: 1.08; margin: 0; letter-spacing: -.015em; }
+  h1 small { display: block; font: 500 12px "IBM Plex Mono", monospace; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+  .icon-btn { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* Buttons */
-  .btn { font: 500 14px "IBM Plex Sans", sans-serif; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: background .15s, border-color .15s, transform .05s; }
-  .btn:hover { border-color: var(--muted); }
-  .btn:active { transform: translateY(1px); }
-  .btn.sm { padding: 4px 10px; font-size: 12px; }
-  .btn.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-  .btn.again { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
-  .btn.good { background: var(--good-soft); border-color: transparent; color: var(--good); }
-  .btn[aria-pressed="true"] { background: var(--chip); border-color: var(--muted); }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .quick { display: flex; gap: 8px; margin: 0 0 6px; }
+  .pill { border: 1px solid var(--line); background: var(--panel); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .pill:active { transform: scale(.97); }
 
-  /* Study area */
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
-  .toolbar .spacer { flex: 1; }
-  .progress { height: 4px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
-  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s ease; }
-  .stats { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
-  .stats strong { color: var(--ink); font-weight: 500; }
+  .part { margin-top: 18px; }
+  .part-head { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px; }
+  .part-head span { font: 500 11px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .part-head button { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 500; padding: 6px 4px; cursor: pointer; }
+  .group { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .ch { display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: center; padding: 14px 14px; min-height: 56px; cursor: pointer; user-select: none; border-top: 1px solid var(--line); }
+  .ch:first-child { border-top: 0; }
+  .ch:active { background: var(--chip); }
+  .box { width: 24px; height: 24px; border-radius: 7px; border: 1.5px solid var(--muted); display: grid; place-items: center; transition: background .15s, border-color .15s; }
+  .ch.on .box { background: var(--accent); border-color: var(--accent); }
+  .ch.on .box::after { content: ""; width: 10px; height: 6px; border: 2.2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px,-1px); }
+  .ch-title { font-size: 15px; line-height: 1.3; }
+  .ch-num { display: block; font: 500 11px "IBM Plex Mono", monospace; color: var(--muted); margin-bottom: 2px; }
+  .meter { text-align: right; font: 500 11px "IBM Plex Mono", monospace; color: var(--muted); white-space: nowrap; }
+  .meter i { display: block; width: 44px; height: 3px; background: var(--line); border-radius: 9px; margin-top: 5px; overflow: hidden; }
+  .meter i b { display: block; height: 100%; background: var(--good); }
 
-  .card-wrap { perspective: 1600px; }
-  .card { position: relative; min-height: 340px; cursor: pointer; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+  .opts { margin-top: 24px; }
+  .opt { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border-top: 1px solid var(--line); cursor: pointer; user-select: none; }
+  .opt:first-child { border-top: 0; }
+  .opt-txt { font-size: 15px; }
+  .opt-txt small { display: block; font-size: 12px; color: var(--muted); }
+  .switch { flex: none; width: 44px; height: 26px; border-radius: 99px; background: var(--line); position: relative; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+  .opt.on .switch { background: var(--accent); }
+  .opt.on .switch::after { transform: translateX(18px); }
+  .reset { display: block; margin: 22px auto 0; background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+  .note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(14px + var(--safe-b)); background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 5; }
+  .dock-inner { max-width: 560px; margin: 0 auto; }
+  .start { width: 100%; border: 0; border-radius: 16px; background: var(--ink); color: var(--bg); padding: 17px 20px; font-size: 17px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: var(--shadow); transition: opacity .15s, transform .08s; }
+  .start:active { transform: scale(.985); }
+  .start:disabled { opacity: .35; cursor: not-allowed; }
+  .start span { font: 500 13px "IBM Plex Mono", monospace; opacity: .75; }
+
+  /* ---------- Study screen ---------- */
+  #study { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: calc(10px + var(--safe-t)) 16px calc(14px + var(--safe-b)); }
+  .bar { display: flex; align-items: center; gap: 12px; }
+  .back { display: flex; align-items: center; gap: 4px; background: none; border: 0; padding: 8px 8px 8px 0; font-size: 15px; font-weight: 500; cursor: pointer; }
+  .back svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .count { margin-left: auto; font: 500 13px "IBM Plex Mono", monospace; color: var(--muted); }
+  .progress { height: 4px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 14px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s ease; }
+
+  .deck { flex: 1; min-height: 0; position: relative; perspective: 1600px; }
+  .card { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.2,.7,.2,1); cursor: pointer; touch-action: pan-y; }
   .card.flipped { transform: rotateY(180deg); }
-  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 28px 28px 52px; display: flex; flex-direction: column; overflow: auto; }
+  .card.dragging { transition: none; }
+  .card.fly { transition: transform .28s ease-in, opacity .28s ease-in; opacity: 0; }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); padding: 22px 22px 18px; display: flex; flex-direction: column; align-items: stretch; overflow: hidden; }
+  .face > .tag, .face > .body, .face > .hint { width: 100%; }
   .face.back { transform: rotateY(180deg); }
-  .tag { font-family: "IBM Plex Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 18px; }
+  .tag { font: 500 11px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); line-height: 1.5; }
   .tag em { font-style: normal; color: var(--accent); }
-  .q { font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: clamp(21px, 3vw, 28px); line-height: 1.3; margin: auto 0; letter-spacing: -.005em; }
-  .a { font-size: 17px; line-height: 1.6; margin: auto 0; white-space: pre-line; }
+  .body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; padding: 14px 0; -webkit-overflow-scrolling: touch; }
+  .body > div { margin: auto 0; }
+  .q { font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: 25px; line-height: 1.28; letter-spacing: -.005em; }
+  .a { font-size: 17px; line-height: 1.6; white-space: pre-line; }
   .a strong { font-weight: 600; }
-  .a code { font-family: "IBM Plex Mono", monospace; font-size: .9em; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
-  .hint { position: absolute; bottom: 16px; left: 28px; right: 28px; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
-  .kbd { font-family: "IBM Plex Mono", monospace; font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+  .a code, .q code { font-family: "IBM Plex Mono", monospace; font-size: .86em; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+  .hint { font-size: 12px; color: var(--muted); text-align: center; }
+  .stamp { position: absolute; top: 72px; padding: 4px 10px; border-radius: 8px; font: 600 13px "IBM Plex Sans", sans-serif; letter-spacing: .04em; text-transform: uppercase; opacity: 0; pointer-events: none; z-index: 3; }
+  .stamp { background: var(--panel); }
+  .stamp.got { left: 18px; color: var(--good); border: 2px solid var(--good); transform: rotate(-8deg); }
+  .stamp.again { right: 18px; color: var(--accent); border: 2px solid var(--accent); transform: rotate(8deg); }
 
-  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
-  .actions .btn { min-width: 120px; padding: 11px 18px; }
+  .actions { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; margin-top: 14px; }
+  .act { border: 0; border-radius: 16px; padding: 16px 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform .08s; }
+  .act:active { transform: scale(.96); }
+  .act.again { background: var(--accent-soft); color: var(--accent); }
+  .act.got { background: var(--good-soft); color: var(--good); }
+  .act.skip { background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 16px 18px; font-weight: 500; }
+  .swipe-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
 
-  .empty { background: var(--panel); border: 1px dashed var(--line); border-radius: 18px; padding: 48px 24px; text-align: center; color: var(--muted); }
-  .empty h3 { font-family: Fraunces, Georgia, serif; color: var(--ink); font-weight: 500; font-size: 24px; margin: 0 0 8px; }
-  .empty p { margin: 0 0 18px; }
+  .done { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+  .done h2 { font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: 30px; margin: 0 0 8px; }
+  .done p { color: var(--muted); margin: 0 0 26px; }
+  .done .start { max-width: 320px; justify-content: center; margin-bottom: 10px; }
+  .done .pill { padding: 12px 20px; }
 
-  footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
-  .keys { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 14px; justify-content: center; }
-  @media (max-width: 520px) { .keys { display: none; } .face { padding: 22px 20px 48px; } .hint { left: 20px; right: 20px; } }
+  @media (min-width: 700px) {
+    #select { padding-top: 48px; }
+    h1 { font-size: 36px; }
+    #study { max-height: 860px; }
+    .q { font-size: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .card, .card.fly { transition: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Designing Data-Intensive Applications <span>/</span> Flashcards</h1>
-      <div class="sub">1st edition · pick chapters on the left, then flip through</div>
-    </div>
-    <button class="btn sm" id="themeBtn" title="Toggle light/dark">Theme</button>
-  </header>
 
-  <div class="layout">
-    <aside>
-      <details id="chDetails" open>
-      <summary class="side-head"><h2>Chapters <span class="caret">▾</span></h2><span class="ch-meta" id="selCount"></span></summary>
-      <div class="quick" style="margin-top:8px">
-        <button class="btn sm" id="allBtn">All</button>
-        <button class="btn sm" id="noneBtn">None</button>
-      </div>
-      <div id="chapterList"></div>
-      <div class="quick" style="margin-top:16px">
-        <button class="btn sm" id="resetBtn" title="Clear your 'Got it' history">Reset progress</button>
-      </div>
-      </details>
-    </aside>
-
-    <main>
-      <div class="toolbar">
-        <button class="btn" id="shuffleBtn" aria-pressed="true">Shuffle</button>
-        <button class="btn" id="dueBtn" aria-pressed="false" title="Only show cards you haven't marked 'Got it'">Unlearned only</button>
-        <button class="btn" id="reverseBtn" aria-pressed="false" title="Show the answer first">Answer first</button>
-        <span class="spacer"></span>
-        <button class="btn" id="restartBtn">Restart</button>
-      </div>
-      <div class="stats" id="stats"></div>
-      <div class="progress"><div id="bar"></div></div>
-      <div id="stage"></div>
-      <div class="keys">
-        <span><span class="kbd">Space</span> flip</span>
-        <span><span class="kbd">→</span> / <span class="kbd">G</span> got it</span>
-        <span><span class="kbd">←</span> / <span class="kbd">A</span> again</span>
-        <span><span class="kbd">S</span> skip</span>
-      </div>
-    </main>
+<!-- Screen 1: pick chapters -->
+<section id="select" class="screen">
+  <div class="top">
+    <h1><small>DDIA · 1st edition</small>Flashcards</h1>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle light/dark theme">
+      <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
   </div>
-  <footer>Cards are study notes written for this site, not text from the book. Edit <code>cards.js</code> to add your own. Progress is saved in this browser only.</footer>
-</div>
+
+  <div class="quick">
+    <button class="pill" id="allBtn">Select all</button>
+    <button class="pill" id="noneBtn">Clear</button>
+  </div>
+  <div id="chapterList"></div>
+
+  <div class="opts">
+    <div class="part-head"><span>Options</span></div>
+    <div class="group">
+      <div class="opt" data-opt="shuffle"><div class="opt-txt">Shuffle<small>Mix cards from all chosen chapters</small></div><div class="switch"></div></div>
+      <div class="opt" data-opt="dueOnly"><div class="opt-txt">Unlearned only<small>Skip cards you've marked "Got it"</small></div><div class="switch"></div></div>
+      <div class="opt" data-opt="reverse"><div class="opt-txt">Answer first<small>Recall the question from the answer</small></div><div class="switch"></div></div>
+    </div>
+  </div>
+  <button class="reset" id="resetBtn">Reset learned progress</button>
+  <p class="note">Progress is saved on this device.</p>
+
+  <div class="dock"><div class="dock-inner">
+    <button class="start" id="startBtn"><b>Start</b><span id="startCount"></span></button>
+  </div></div>
+</section>
+
+<!-- Screen 2: flashcards -->
+<section id="study" class="screen" hidden>
+  <div class="bar">
+    <button class="back" id="backBtn"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Chapters</button>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="progress"><div id="progress"></div></div>
+  <div id="stage" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+</section>
 
 <script src="cards.js"></script>
 <script>
 (function () {
   const CH = window.DDIA || [];
   const KEY = "ddia-flash-v1";
-  const store = {
-    load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
-    save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
-  };
-  const saved = store.load();
-  const state = {
-    selected: new Set(saved.selected || [1]),
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
+  const saved = load();
+  const S = {
+    selected: new Set(saved.selected || []),
     known: new Set(saved.known || []),
-    shuffle: saved.shuffle !== false,
-    dueOnly: !!saved.dueOnly,
-    reverse: !!saved.reverse,
+    shuffle: saved.shuffle !== false, dueOnly: !!saved.dueOnly, reverse: !!saved.reverse,
     theme: saved.theme || null,
-    deck: [], i: 0, flipped: false, seen: 0, gotIt: 0, again: 0, total: 0
+    deck: [], i: 0, flipped: false, seen: 0, got: 0, again: 0
   };
-  const persist = () => store.save({
-    selected: [...state.selected], known: [...state.known], shuffle: state.shuffle,
-    dueOnly: state.dueOnly, reverse: state.reverse, theme: state.theme
-  });
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify({
+    selected: [...S.selected], known: [...S.known], shuffle: S.shuffle, dueOnly: S.dueOnly, reverse: S.reverse, theme: S.theme
+  })); } catch (e) {} };
   const $ = id => document.getElementById(id);
-  const cardId = (c, n) => c.id + ":" + n;
+  const cid = (c, n) => c.id + ":" + n;
   const esc = s => s.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
   const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`(.+?)`/g, "<code>$1</code>");
 
-  // ----- theme
-  function applyTheme() {
-    if (state.theme) document.documentElement.setAttribute("data-theme", state.theme);
-    else document.documentElement.removeAttribute("data-theme");
-  }
+  /* ---------- theme ---------- */
+  const applyTheme = () => S.theme ? document.documentElement.setAttribute("data-theme", S.theme) : document.documentElement.removeAttribute("data-theme");
   $("themeBtn").onclick = () => {
-    const dark = state.theme ? state.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-    state.theme = dark ? "light" : "dark"; applyTheme(); persist();
+    const dark = S.theme ? S.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    S.theme = dark ? "light" : "dark"; applyTheme(); persist();
   };
   applyTheme();
 
-  // ----- sidebar
-  function renderChapters() {
+  /* ---------- select screen ---------- */
+  function deckFor() {
+    const out = [];
+    CH.filter(c => S.selected.has(c.id)).forEach(c => c.cards.forEach((card, n) => {
+      const id = cid(c, n);
+      if (!S.dueOnly || !S.known.has(id)) out.push({ ...card, id, ch: c });
+    }));
+    return out;
+  }
+  function renderSelect() {
     const list = $("chapterList"); list.innerHTML = "";
-    let lastPart = null;
-    CH.forEach(c => {
-      if (c.part !== lastPart) {
-        lastPart = c.part;
-        const lbl = document.createElement("div"); lbl.className = "part-label";
-        lbl.innerHTML = `<span>${esc(c.part)}</span>`;
-        const b = document.createElement("button"); b.textContent = "toggle part";
-        const partIds = CH.filter(x => x.part === c.part).map(x => x.id);
-        b.onclick = () => {
-          const allOn = partIds.every(id => state.selected.has(id));
-          partIds.forEach(id => allOn ? state.selected.delete(id) : state.selected.add(id));
-          changed();
-        };
-        lbl.appendChild(b); list.appendChild(lbl);
-      }
-      const known = c.cards.filter((_, n) => state.known.has(cardId(c, n))).length;
-      const row = document.createElement("label"); row.className = "ch";
-      row.innerHTML = `<input type="checkbox" ${state.selected.has(c.id) ? "checked" : ""}>
-        <span class="ch-title"><b>${String(c.id).padStart(2, "0")}</b>${esc(c.title)}</span>
-        <span class="ch-meta ${known === c.cards.length ? "done" : ""}">${known}/${c.cards.length}</span>`;
-      row.querySelector("input").onchange = e => {
-        e.target.checked ? state.selected.add(c.id) : state.selected.delete(c.id); changed();
-      };
-      list.appendChild(row);
+    const parts = [...new Set(CH.map(c => c.part))];
+    parts.forEach(p => {
+      const chs = CH.filter(c => c.part === p);
+      const wrap = document.createElement("div"); wrap.className = "part";
+      const allOn = chs.every(c => S.selected.has(c.id));
+      wrap.innerHTML = `<div class="part-head"><span>${esc(p)}</span><button>${allOn ? "Clear part" : "Select part"}</button></div><div class="group"></div>`;
+      wrap.querySelector("button").onclick = () => { chs.forEach(c => allOn ? S.selected.delete(c.id) : S.selected.add(c.id)); changed(); };
+      const g = wrap.querySelector(".group");
+      chs.forEach(c => {
+        const k = c.cards.filter((_, n) => S.known.has(cid(c, n))).length;
+        const row = document.createElement("div");
+        row.className = "ch" + (S.selected.has(c.id) ? " on" : "");
+        row.setAttribute("role", "checkbox"); row.setAttribute("aria-checked", S.selected.has(c.id)); row.tabIndex = 0;
+        row.innerHTML = `<span class="box"></span>
+          <span class="ch-title"><span class="ch-num">Chapter ${c.id}</span>${esc(c.title)}</span>
+          <span class="meter">${k}/${c.cards.length}<i><b style="width:${100 * k / c.cards.length}%"></b></i></span>`;
+        const toggle = () => { S.selected.has(c.id) ? S.selected.delete(c.id) : S.selected.add(c.id); changed(); };
+        row.onclick = toggle;
+        row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
+        g.appendChild(row);
+      });
+      list.appendChild(wrap);
     });
-    const n = [...state.selected].reduce((s, id) => s + (CH.find(c => c.id === id)?.cards.length || 0), 0);
-    $("selCount").textContent = `${state.selected.size} ch · ${n} cards`;
+    document.querySelectorAll(".opt").forEach(o => o.classList.toggle("on", !!S[o.dataset.opt]));
+    const n = deckFor().length;
+    $("startCount").textContent = S.selected.size ? `${n} card${n === 1 ? "" : "s"} · ${S.selected.size} ch` : "pick a chapter";
+    $("startBtn").disabled = n === 0;
+    if (S.selected.size && n === 0) $("startCount").textContent = "all learned";
   }
-  $("allBtn").onclick = () => { CH.forEach(c => state.selected.add(c.id)); changed(); };
-  $("noneBtn").onclick = () => { state.selected.clear(); changed(); };
-  $("resetBtn").onclick = () => {
-    if (confirm("Clear all 'Got it' progress?")) { state.known.clear(); persist(); renderChapters(); build(); }
-  };
+  function changed() { persist(); renderSelect(); }
+  document.querySelectorAll(".opt").forEach(o => o.onclick = () => { S[o.dataset.opt] = !S[o.dataset.opt]; changed(); });
+  $("allBtn").onclick = () => { CH.forEach(c => S.selected.add(c.id)); changed(); };
+  $("noneBtn").onclick = () => { S.selected.clear(); changed(); };
+  $("resetBtn").onclick = () => { if (confirm("Clear all 'Got it' progress?")) { S.known.clear(); changed(); } };
 
-  // ----- toolbar toggles
-  function syncToggles() {
-    $("shuffleBtn").setAttribute("aria-pressed", state.shuffle);
-    $("dueBtn").setAttribute("aria-pressed", state.dueOnly);
-    $("reverseBtn").setAttribute("aria-pressed", state.reverse);
+  /* ---------- navigation (uses history so the phone back button returns to chapters) ---------- */
+  function show(view) {
+    $("select").hidden = view !== "select";
+    $("study").hidden = view !== "study";
+    window.scrollTo(0, 0);
   }
-  $("shuffleBtn").onclick = () => { state.shuffle = !state.shuffle; changed(); };
-  $("dueBtn").onclick = () => { state.dueOnly = !state.dueOnly; changed(); };
-  $("reverseBtn").onclick = () => { state.reverse = !state.reverse; persist(); syncToggles(); render(); };
-  $("restartBtn").onclick = () => build();
+  $("startBtn").onclick = () => { build(); history.pushState({ v: "study" }, "", "#study"); show("study"); };
+  $("backBtn").onclick = () => { history.state && history.state.v === "study" ? history.back() : (show("select"), renderSelect()); };
+  addEventListener("popstate", () => { show(location.hash === "#study" && S.deck.length ? "study" : "select"); renderSelect(); });
+  if (location.hash) history.replaceState(null, "", location.pathname);
 
-  function changed() { persist(); syncToggles(); renderChapters(); build(); }
-
-  // ----- deck
+  /* ---------- study ---------- */
   function build() {
-    let deck = [];
-    CH.filter(c => state.selected.has(c.id)).forEach(c =>
-      c.cards.forEach((card, n) => {
-        const id = cardId(c, n);
-        if (!state.dueOnly || !state.known.has(id)) deck.push({ ...card, id, ch: c });
-      }));
-    if (state.shuffle) for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    Object.assign(state, { deck, i: 0, flipped: false, seen: 0, gotIt: 0, again: 0, total: deck.length });
-    render();
+    const d = deckFor();
+    if (S.shuffle) for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
+    Object.assign(S, { deck: d, i: 0, flipped: false, seen: 0, got: 0, again: 0 });
+    renderStudy();
   }
-
-  function render() {
+  function renderStudy() {
+    const left = S.deck.length - S.i;
+    $("progress").style.width = (S.seen + left) ? (100 * S.seen / (S.seen + left)) + "%" : "0%";
+    $("count").textContent = left > 0 ? `${S.i + 1} / ${S.deck.length}` : "";
     const stage = $("stage");
-    const left = state.deck.length - state.i;
-    $("bar").style.width = state.total ? (100 * state.seen / (state.seen + left)) + "%" : "0%";
-    $("stats").innerHTML = state.total
-      ? `<span>Remaining <strong>${left}</strong></span><span>Got it <strong>${state.gotIt}</strong></span><span>Again <strong>${state.again}</strong></span>`
-      : "";
-
-    if (!state.selected.size) {
-      stage.innerHTML = `<div class="empty"><h3>No chapters selected</h3><p>Tick one or more chapters to start a deck.</p></div>`;
+    if (left <= 0) {
+      stage.innerHTML = `<div class="done"><h2>Deck done</h2><p>${S.got} got it · ${S.again} needed another look</p>
+        <button class="start" id="goAgain"><b>Go again</b></button>
+        <button class="pill" id="goBack">Change chapters</button></div>`;
+      $("goAgain").onclick = build;
+      $("goBack").onclick = () => $("backBtn").click();
       return;
     }
-    if (!state.total) {
-      stage.innerHTML = `<div class="empty"><h3>Nothing left to learn here</h3><p>Every card in these chapters is marked "Got it".</p><button class="btn primary" id="emptyAll">Show all cards</button></div>`;
-      $("emptyAll").onclick = () => { state.dueOnly = false; changed(); };
-      return;
-    }
-    if (state.i >= state.deck.length) {
-      stage.innerHTML = `<div class="empty"><h3>Deck done</h3><p>${state.gotIt} got it · ${state.again} needed another look.</p><button class="btn primary" id="again">Go again</button></div>`;
-      $("again").onclick = build;
-      return;
-    }
-    const c = state.deck[state.i];
-    const front = state.reverse ? { label: "Answer", html: `<div class="a">${fmt(c.a)}</div>` } : { label: "Question", html: `<div class="q">${fmt(c.q)}</div>` };
-    const back = state.reverse ? { label: "Question", html: `<div class="q">${fmt(c.q)}</div>` } : { label: "Answer", html: `<div class="a">${fmt(c.a)}</div>` };
-    const tag = l => `<div class="tag"><em>Ch ${c.ch.id}</em> · ${esc(c.ch.title)} · ${l}${state.known.has(c.id) ? " · ✓ learned" : ""}</div>`;
+    const c = S.deck[S.i];
+    const Q = `<div class="q">${fmt(c.q)}</div>`, A = `<div class="a">${fmt(c.a)}</div>`;
+    const [f, b] = S.reverse ? [["Answer", A], ["Question", Q]] : [["Question", Q], ["Answer", A]];
+    const tag = l => `<div class="tag"><em>Ch ${c.ch.id}</em> · ${esc(c.ch.title)}<br>${l}${S.known.has(c.id) ? " · ✓ learned" : ""}</div>`;
     stage.innerHTML = `
-      <div class="card-wrap"><div class="card ${state.flipped ? "flipped" : ""}" id="card" tabindex="0" aria-label="Flashcard, press space to flip">
-        <div class="face front">${tag(front.label)}${front.html}<div class="hint"><span>Tap to flip</span><span>${state.i + 1} / ${state.deck.length}</span></div></div>
-        <div class="face back">${tag(back.label)}${back.html}<div class="hint"><span>Tap to flip back</span><span>${state.i + 1} / ${state.deck.length}</span></div></div>
-      </div></div>
+      <div class="deck">
+        <div class="card${S.flipped ? " flipped" : ""}" id="card">
+          <div class="face front"><span class="stamp got">Got it</span><span class="stamp again">Again</span>${tag(f[0])}<div class="body">${f[1]}</div><div class="hint">Tap to flip</div></div>
+          <div class="face back"><span class="stamp got">Got it</span><span class="stamp again">Again</span>${tag(b[0])}<div class="body">${b[1]}</div><div class="hint">Tap to flip back</div></div>
+        </div>
+      </div>
       <div class="actions">
-        <button class="btn again" id="aBtn">Again</button>
-        <button class="btn" id="sBtn">Skip</button>
-        <button class="btn good" id="gBtn">Got it</button>
-      </div>`;
-    sizeCard();
-    $("card").onclick = flip;
-    $("aBtn").onclick = again;
-    $("gBtn").onclick = got;
-    $("sBtn").onclick = skip;
+        <button class="act again" id="aBtn">Again</button>
+        <button class="act skip" id="sBtn">Skip</button>
+        <button class="act got" id="gBtn">Got it</button>
+      </div>
+      <div class="swipe-hint">Swipe → got it · ← again</div>`;
+    $("aBtn").onclick = () => advance("again");
+    $("gBtn").onclick = () => advance("got");
+    $("sBtn").onclick = () => advance("skip");
+    attachSwipe($("card"));
   }
-  // Fit card height to the taller face
-  function sizeCard() {
-    const card = $("card"); if (!card) return;
-    let h = 340;
-    card.querySelectorAll(".face").forEach(f => {
-      f.style.position = "relative"; f.style.inset = "auto";
-      h = Math.max(h, f.scrollHeight + 2);
-      f.style.position = ""; f.style.inset = "";
-    });
-    card.style.minHeight = h + "px";
-  }
-  addEventListener("resize", sizeCard);
+  function flip() { S.flipped = !S.flipped; $("card").classList.toggle("flipped", S.flipped); }
 
-  function flip() { state.flipped = !state.flipped; $("card")?.classList.toggle("flipped", state.flipped); }
-  function next() { state.i++; state.seen++; state.flipped = false; render(); }
-  function got() {
-    const c = state.deck[state.i]; if (!c) return;
-    state.known.add(c.id); state.gotIt++; persist(); renderChapters(); next();
+  let busy = false;
+  function advance(kind, flyDir) {
+    const c = S.deck[S.i]; if (!c || busy) return;
+    if (kind === "got") { S.known.add(c.id); S.got++; }
+    if (kind === "again") {
+      S.known.delete(c.id); S.again++;
+      const pos = Math.min(S.deck.length, S.i + 4 + Math.floor(Math.random() * 4));
+      S.deck.splice(pos, 0, c);
+    }
+    persist();
+    const card = $("card");
+    const dir = flyDir || (kind === "got" ? 1 : kind === "again" ? -1 : 0);
+    const go = () => { S.i++; S.seen++; S.flipped = false; busy = false; renderStudy(); };
+    if (dir && card && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      busy = true;
+      const rot = S.flipped ? 180 : 0;
+      card.classList.remove("dragging"); card.classList.add("fly");
+      card.style.transform = `translateX(${dir * 120}%) rotate(${dir * 14}deg) rotateY(${rot}deg)`;
+      setTimeout(go, 260);
+    } else go();
   }
-  function again() {
-    const c = state.deck[state.i]; if (!c) return;
-    state.known.delete(c.id); state.again++; persist(); renderChapters();
-    // put it back a few cards later
-    const pos = Math.min(state.deck.length, state.i + 4 + Math.floor(Math.random() * 4));
-    state.deck.splice(pos, 0, c); next();
+
+  function attachSwipe(card) {
+    let x0 = 0, y0 = 0, dx = 0, active = false, horiz = null;
+    const stamps = () => card.querySelectorAll(S.flipped ? ".back .stamp" : ".front .stamp");
+    const setStamp = v => stamps().forEach(s => {
+      const isGot = s.classList.contains("got");
+      s.style.opacity = isGot ? Math.max(0, Math.min(1, v / 90)) : Math.max(0, Math.min(1, -v / 90));
+    });
+    card.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      active = true; horiz = null; x0 = e.clientX; y0 = e.clientY; dx = 0;
+    });
+    card.addEventListener("pointermove", e => {
+      if (!active) return;
+      const mx = e.clientX - x0, my = e.clientY - y0;
+      if (horiz === null && (Math.abs(mx) > 8 || Math.abs(my) > 8)) {
+        horiz = Math.abs(mx) > Math.abs(my);
+        if (horiz) { card.setPointerCapture(e.pointerId); card.classList.add("dragging"); }
+      }
+      if (!horiz) return;
+      dx = mx;
+      card.style.transform = `translateX(${dx}px) rotate(${dx / 22}deg) rotateY(${S.flipped ? 180 : 0}deg)`;
+      setStamp(dx);
+    });
+    const end = () => {
+      if (!active) return; active = false;
+      if (horiz) {
+        card.classList.remove("dragging");
+        if (Math.abs(dx) > Math.min(110, card.offsetWidth * 0.28)) { advance(dx > 0 ? "got" : "again", Math.sign(dx)); return; }
+        card.style.transform = ""; setStamp(0);
+      } else if (horiz === null) {
+        flip(); // a tap
+      }
+    };
+    card.addEventListener("pointerup", end);
+    card.addEventListener("pointercancel", () => { active = false; card.classList.remove("dragging"); card.style.transform = ""; setStamp(0); });
   }
-  function skip() { if (state.deck[state.i]) next(); }
 
   addEventListener("keydown", e => {
-    if (e.target.tagName === "INPUT" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if ($("study").hidden || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
-    if (k === " " || k === "enter" && e.target.id === "card") { e.preventDefault(); flip(); }
-    else if (k === "arrowright" || k === "g") got();
-    else if (k === "arrowleft" || k === "a") again();
-    else if (k === "s") skip();
+    if (k === " ") { e.preventDefault(); if ($("card")) flip(); }
+    else if (k === "arrowright" || k === "g") advance("got");
+    else if (k === "arrowleft" || k === "a") advance("again");
+    else if (k === "s") advance("skip");
+    else if (k === "escape") $("backBtn").click();
   });
 
-  if (matchMedia("(max-width: 820px)").matches) $("chDetails").open = false;
-  syncToggles(); renderChapters(); build();
+  renderSelect();
 })();
 </script>
 </body>
