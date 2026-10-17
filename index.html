@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DDIA Cards">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>DDIA Flashcards</title>
 <meta name="description" content="Chapter-by-chapter flashcards for Designing Data-Intensive Applications (1st edition).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -159,6 +163,7 @@
   <div class="quick">
     <button class="pill" id="allBtn">Select all</button>
     <button class="pill" id="noneBtn">Clear</button>
+    <button class="pill" id="installBtn" hidden style="margin-left:auto;color:var(--accent)">Install app</button>
   </div>
   <div id="chapterList"></div>
 
@@ -389,6 +394,18 @@
   });
 
   renderSelect();
+
+  /* ---------- PWA: offline support + install button (Android/desktop Chrome) ---------- */
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+  let installEvt = null;
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
+  $("installBtn").onclick = async () => {
+    if (!installEvt) return;
+    installEvt.prompt(); await installEvt.userChoice; installEvt = null; $("installBtn").hidden = true;
+  };
+  addEventListener("appinstalled", () => { $("installBtn").hidden = true; });
 })();
 </script>
 </body>

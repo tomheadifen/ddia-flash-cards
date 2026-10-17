@@ -17,3 +17,10 @@ Edit `cards.js` and append `{ q: "...", a: "..." }` to a chapter's `cards` array
 ## Hosting
 
 Settings → Pages → Deploy from a branch → `main` / `(root)`.
+
+## Install as an app (PWA)
+
+- **Android (Chrome):** tap **Install app** on the chapters screen, or ⋮ menu → *Install app*.
+- **iPhone (Safari):** Share → *Add to Home Screen*.
+
+It opens full-screen and works offline. When you're online it picks up new cards automatically. If you change the list of app files, bump `CACHE` in `sw.js`.
